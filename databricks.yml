@@ -26,9 +26,9 @@ targets:
     default: true
     workspace:
       # Implantado pela identidade deployer (OIDC) no caminho padrão dela (~/.bundle/...).
-      host: https://adb-7405604712424519.19.azuredatabricks.net
+      host: https://adb-7405611888860190.10.azuredatabricks.net
     variables:
       catalog: pedidos_dev
-      capture_url: abfss://capture-pedidos@stedpdev6lkl1.dfs.core.windows.net/
+      capture_url: abfss://capture-pedidos@stedpdevpwc3i.dfs.core.windows.net/
       # pedidos-service@main com o contrato v1.1.0 (ODCS v3.2.0)
       contract_ref: 211478a0ad2248b74dd595b763c0a333c7f87243
