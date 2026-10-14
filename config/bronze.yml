@@ -1,0 +1,5 @@
+# Consumido pelo edp-ingestion (platform-ingestion-framework).
+ingestion:
+  - event_hub: pedidos.pedido.v1
+    capture_url: ${capture_url}
+    target: ${catalog}.bronze.pedido_eventos_raw

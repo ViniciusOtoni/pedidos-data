@@ -1,0 +1,34 @@
+# Bundle de dados do BC Pedidos. O domínio só DECLARA (config + jobs); quem executa são os
+# frameworks da plataforma (edp-ingestion / edp-etl), em versão fixada.
+bundle:
+  name: pedidos-data
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Catálogo UC do domínio no ambiente
+    default: pedidos_dev
+  capture_url:
+    description: Raiz do Event Hubs Capture do domínio (external location, gatilho file arrival)
+  contract_ref:
+    description: Revisão (commit) do contrato ODCS no pedidos-service consumida pela Silver
+  ingestion_wheel:
+    description: Framework Bronze (versão fixada)
+    default: https://github.com/ViniciusOtoni/platform-ingestion-framework/releases/download/v0.1.0/edp_ingestion-0.1.0-py3-none-any.whl
+  etl_wheel:
+    description: Framework Silver (versão fixada)
+    default: https://github.com/ViniciusOtoni/platform-etl-framework/releases/download/v0.1.0/edp_etl-0.1.0-py3-none-any.whl
+
+targets:
+  dev:
+    default: true
+    workspace:
+      # Implantado pela identidade deployer (OIDC) no caminho padrão dela (~/.bundle/...).
+      host: https://adb-7405604712424519.19.azuredatabricks.net
+    variables:
+      catalog: pedidos_dev
+      capture_url: abfss://capture-pedidos@stedpdev6lkl1.dfs.core.windows.net/
+      # pedidos-service@main com o contrato v1.1.0 (ODCS v3.2.0)
+      contract_ref: 211478a0ad2248b74dd595b763c0a333c7f87243

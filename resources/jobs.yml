@@ -1,0 +1,85 @@
+# Coreografia de dados (ADR-0006): cada camada reage à anterior, sem cron.
+#   Capture grava .avro -> [file arrival] Bronze -> [table update] Silver -> [table update] Gold
+resources:
+  jobs:
+    pedidos_bronze:
+      name: pedidos-bronze-${bundle.target}
+      description: Event Hubs Capture -> ${var.catalog}.bronze.pedido_eventos_raw (edp-ingestion)
+      max_concurrent_runs: 1
+      trigger:
+        pause_status: UNPAUSED
+        file_arrival:
+          url: ${var.capture_url}
+          min_time_between_triggers_seconds: 60
+          wait_after_last_change_seconds: 60
+      tasks:
+        - task_key: ingest
+          environment_key: bronze
+          python_wheel_task:
+            package_name: edp_ingestion
+            entry_point: edp-ingestion
+            parameters:
+              - --config
+              - ${workspace.file_path}/config/bronze.yml
+              - --var
+              - catalog=${var.catalog}
+              - --var
+              - capture_url=${var.capture_url}
+      environments:
+        - environment_key: bronze
+          spec:
+            environment_version: "4"
+            dependencies:
+              - edp-ingestion @ ${var.ingestion_wheel}
+
+    pedidos_silver:
+      name: pedidos-silver-${bundle.target}
+      description: Bronze -> ${var.catalog}.silver.{pedido_eventos, pedido, pedido_quarentena} (edp-etl + contrato ODCS)
+      max_concurrent_runs: 1
+      trigger:
+        pause_status: UNPAUSED
+        table_update:
+          table_names:
+            - ${var.catalog}.bronze.pedido_eventos_raw
+          wait_after_last_change_seconds: 60
+      tasks:
+        - task_key: transform
+          environment_key: silver
+          python_wheel_task:
+            package_name: edp_etl
+            entry_point: edp-etl
+            parameters:
+              - --config
+              - ${workspace.file_path}/config/silver.yml
+              - --var
+              - catalog=${var.catalog}
+              - --var
+              - contract_ref=${var.contract_ref}
+      environments:
+        - environment_key: silver
+          spec:
+            environment_version: "4"
+            dependencies:
+              - edp-etl @ ${var.etl_wheel}
+
+    pedidos_gold:
+      name: pedidos-gold-${bundle.target}
+      description: Data products do domínio (lógica de negócio do Gold é do domínio)
+      max_concurrent_runs: 1
+      trigger:
+        pause_status: UNPAUSED
+        table_update:
+          table_names:
+            - ${var.catalog}.silver.pedido
+          wait_after_last_change_seconds: 60
+      tasks:
+        - task_key: pedidos_por_status_diario
+          environment_key: gold
+          spark_python_task:
+            python_file: ../src/gold/pedidos_por_status_diario.py
+            parameters:
+              - ${var.catalog}
+      environments:
+        - environment_key: gold
+          spec:
+            environment_version: "4"

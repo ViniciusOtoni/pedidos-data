@@ -1,0 +1,14 @@
+# Consumido pelo edp-etl (platform-etl-framework). O schema da Silver vem do CONTRATO do produtor,
+# fixado numa revisão do pedidos-service (Published Language pública, ADR-0005).
+silver:
+  source: ${catalog}.bronze.pedido_eventos_raw
+  contract: https://raw.githubusercontent.com/ViniciusOtoni/pedidos-service/${contract_ref}/contracts/pedidos.pedido.v1.odcs.yaml
+  events_table: ${catalog}.silver.pedido_eventos
+  state_table: ${catalog}.silver.pedido
+  derived:
+    status:
+      pedidos.pedido.criado.v1: CRIADO
+      pedidos.pedido.confirmado.v1: CONFIRMADO
+      pedidos.pedido.cancelado.v1: CANCELADO
+  quality:
+    on_failure: warn
