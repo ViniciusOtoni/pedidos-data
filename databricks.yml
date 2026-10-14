@@ -16,7 +16,7 @@ variables:
     description: Revisão (commit) do contrato ODCS no pedidos-service consumida pela Silver
   ingestion_wheel:
     description: Framework Bronze (versão fixada)
-    default: https://github.com/ViniciusOtoni/platform-ingestion-framework/releases/download/v0.1.0/edp_ingestion-0.1.0-py3-none-any.whl
+    default: https://github.com/ViniciusOtoni/platform-ingestion-framework/releases/download/v0.1.1/edp_ingestion-0.1.1-py3-none-any.whl
   etl_wheel:
     description: Framework Silver (versão fixada)
     default: https://github.com/ViniciusOtoni/platform-etl-framework/releases/download/v0.1.0/edp_etl-0.1.0-py3-none-any.whl
